@@ -1,0 +1,22 @@
+# Watchlist of liquid, optionable large-cap equities and ETFs
+# 18 symbols — large-cap tech, index ETFs, financials, and commodities proxies
+# per spec §10: 15-20 symbols, all liquid and optionable
+symbols:
+  - SPY    # S&P 500 ETF — highest option liquidity in market
+  - QQQ    # Nasdaq-100 ETF
+  - IWM    # Russell 2000 small-cap ETF
+  - AAPL   # Apple
+  - MSFT   # Microsoft
+  - NVDA   # Nvidia
+  - AMZN   # Amazon
+  - GOOGL  # Alphabet (Google)
+  - META   # Meta Platforms
+  - TSLA   # Tesla
+  - AMD    # Advanced Micro Devices
+  - NFLX   # Netflix
+  - JPM    # JPMorgan Chase — high-liquidity financial
+  - GLD    # SPDR Gold ETF — macro hedge instrument
+  - TLT    # iShares 20+ Yr Treasury Bond ETF — rates proxy
+  - BA     # Boeing
+  - UBER   # Uber Technologies
+  - CRM    # Salesforce

@@ -1,0 +1,32 @@
+name: trading-cycle
+
+concurrency:
+  group: trading-cycle-executor
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron: '*/30 13-20 * * 1-5'   # every 30 min, ~US market hours UTC, weekdays
+  workflow_dispatch: {}
+
+jobs:
+  run-cycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      - run: uv pip install --system -r requirements.txt
+      - run: python -m src.orchestrator
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_PAPER_TRADE: "true"
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
