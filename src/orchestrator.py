@@ -407,6 +407,9 @@ async def run_cycle() -> None:
                     f"[{symbol}] Order execution failed: {e}", exc_info=True
                 )
 
+            # Sleep to respect Gemini API free tier rate limit (15 Requests Per Minute)
+            await asyncio.sleep(5)
+
         # 4. Position Monitor — checks every open position, closes as needed
         logger.info("=== Running position monitor ===")
         try:

@@ -1,0 +1,508 @@
+2026-09-02 17:45:37,749 [INFO] dry_run: ============================================================
+2026-09-02 17:45:37,749 [INFO] dry_run: DRY RUN — Full Agent Lifecycle
+2026-09-02 17:45:37,749 [INFO] dry_run: Logs: E:\Alpaca-Hackathon\dry_run_results.log
+2026-09-02 17:45:37,755 [INFO] dry_run: ============================================================
+2026-09-02 17:45:37,756 [INFO] orchestrator: === Trading cycle starting at 2026-09-02T12:15:37.756596+00:00 ===
+2026-09-02 17:45:46,155 [INFO] src.data.mcp_client: Connected to Alpaca MCP Server. Discovered tools: ['place_stock_order', 'place_crypto_order', 'place_option_order', 'get_stock_bars', 'get_stock_quotes', 'get_stock_trades', 'get_crypto_bars', 'get_crypto_quotes', 'get_crypto_trades', 'search_alpaca_docs', 'fetch_alpaca_doc', 'search_alpaca_api_specs', 'list_alpaca_api_endpoints', 'get_alpaca_endpoint_docs', 'get_locates', 'create_locate', 'get_locate', 'get_locate_quotes', 'get_account_info', 'get_account_activities', 'get_account_activities_by_type', 'get_account_config', 'update_account_config', 'get_portfolio_history', 'get_all_assets', 'get_asset', 'get_calendar', 'get_clock', 'get_corporate_action_announcements', 'get_corporate_action_announcement', 'get_option_contracts', 'get_option_contract', 'get_orders', 'cancel_all_orders', 'get_order_by_id', 'cancel_order_by_id', 'replace_order_by_id', 'get_order_by_client_id', 'get_all_positions', 'close_all_positions', 'get_open_position', 'close_position', 'do_not_exercise_options_position', 'exercise_options_position', 'get_watchlists', 'create_watchlist', 'get_watchlist_by_id', 'update_watchlist_by_id', 'add_asset_to_watchlist_by_id', 'delete_watchlist_by_id', 'remove_asset_from_watchlist_by_id', 'get_fixed_income_latest_quotes', 'get_news', 'get_option_bars', 'get_option_exchange_codes', 'get_option_latest_quote', 'get_option_snapshot', 'get_option_chain', 'get_option_trades', 'get_option_latest_trade', 'get_market_movers', 'get_most_active_stocks', 'get_crypto_latest_bar', 'get_crypto_latest_orderbook', 'get_crypto_latest_quote', 'get_crypto_latest_trade', 'get_crypto_snapshot', 'get_corporate_actions', 'get_stock_latest_bar', 'get_stock_latest_quote', 'get_stock_snapshot', 'get_stock_latest_trade']
+2026-09-02 17:45:47,414 [INFO] orchestrator: Account data retrieved. Keys: ['_alpaca_mcp_security', 'data']
+2026-09-02 17:45:48,850 [INFO] httpx: HTTP Request: GET https://uwtrxmhqbddubwgjehvm.supabase.co/rest/v1/positions?select=%2A&status=eq.open "HTTP/2 200 OK"
+2026-09-02 17:45:48,852 [INFO] orchestrator: AccountState: daily_pnl_pct=0.0000, open_positions=0, buying_power=$100,000.00
+2026-09-02 17:45:49,064 [INFO] httpx: HTTP Request: GET https://uwtrxmhqbddubwgjehvm.supabase.co/rest/v1/positions?select=realized_pnl&status=eq.closed&order=closed_at.desc&limit=10 "HTTP/2 200 OK"
+2026-09-02 17:45:49,084 [INFO] orchestrator: Watchlist: ['SPY', 'QQQ', 'IWM', 'AAPL', 'MSFT', 'NVDA', 'AMZN', 'GOOGL', 'META', 'TSLA', 'AMD', 'NFLX', 'JPM', 'GLD', 'TLT', 'BA', 'UBER', 'CRM']
+2026-09-02 17:45:49,084 [INFO] orchestrator: --- Processing SPY ---
+2026-09-02 17:45:49,986 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'SPY': [{'c': 750.59, 'h': 752.13, 'l': 748.37, 'n': 637860, 'o': 750.01, 't': '2026-05-26T04:00:00Z', 'v': 41224290, 'vw': 750.031529}, {'c': 750.46, 'h': 751.38, 'l': 748.22, 'n': 629697, 'o': 750.
+2026-09-02 17:45:49,986 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:45:50,017 [INFO] orchestrator: [SPY] Signals: {'rsi': 57.4, 'macd_line': 6.8523, 'macd_signal': 6.4351, 'macd_histogram': 0.4172, 'latest_price': 769.06}
+2026-09-02 17:45:51,494 [INFO] src.data.firecrawl_research: [SPY] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:45:51,605 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:45:51,605 [WARNING] google_genai.models: Direct use of automatic function calling (AFC) in Models.generate_content is not recommended. Instead, we recommend to use AFC in Chat.send_message. Similarly, direct use of AFC in Models.generate_content_stream is not recommended. Instead, we recommend to use AFC in Chat.send_message_stream.
+2026-09-02 17:45:52,307 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:45:52,319 [ERROR] src.agents.debate: [SPY] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:52,319 [ERROR] orchestrator: [SPY] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:52,345 [INFO] orchestrator: --- Processing QQQ ---
+2026-09-02 17:45:52,611 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'QQQ': [{'c': 730.28, 'h': 731.17, 'l': 724.16, 'n': 691240, 'o': 725.96, 't': '2026-05-26T04:00:00Z', 'v': 34470924, 'vw': 728.521289}, {'c': 729.45, 'h': 733.32, 'l': 725.44, 'n': 685841, 'o': 732.
+2026-09-02 17:45:52,613 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:45:52,613 [INFO] orchestrator: [QQQ] Signals: {'rsi': 51.08, 'macd_line': 4.4027, 'macd_signal': 2.4912, 'macd_histogram': 1.9115, 'latest_price': 716.08}
+2026-09-02 17:45:53,828 [INFO] src.data.firecrawl_research: [QQQ] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:45:53,898 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:45:54,467 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:45:54,469 [ERROR] src.agents.debate: [QQQ] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:54,469 [ERROR] orchestrator: [QQQ] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:54,470 [INFO] orchestrator: --- Processing IWM ---
+2026-09-02 17:45:54,782 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'IWM': [{'c': 290.51, 'h': 290.55, 'l': 287.74, 'n': 290420, 'o': 288.39, 't': '2026-05-26T04:00:00Z', 'v': 24508794, 'vw': 289.675084}, {'c': 290.37, 'h': 291.72, 'l': 289.31, 'n': 286008, 'o': 291.
+2026-09-02 17:45:54,782 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:45:54,785 [INFO] orchestrator: [IWM] Signals: {'rsi': 55.62, 'macd_line': 2.381, 'macd_signal': 2.1026, 'macd_histogram': 0.2784, 'latest_price': 301.72}
+2026-09-02 17:45:56,205 [INFO] src.data.firecrawl_research: [IWM] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:45:56,262 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:45:56,515 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:45:56,517 [ERROR] src.agents.debate: [IWM] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:56,517 [ERROR] orchestrator: [IWM] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:56,519 [INFO] orchestrator: --- Processing AAPL ---
+2026-09-02 17:45:56,828 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'AAPL': [{'c': 308.33, 'h': 311.82, 'l': 307.67, 'n': 761571, 'o': 309.56, 't': '2026-05-26T04:00:00Z', 'v': 48211426, 'vw': 309.544399}, {'c': 310.85, 'h': 313.26, 'l': 308.3, 'n': 753860, 'o': 308.
+2026-09-02 17:45:56,828 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:45:56,832 [INFO] orchestrator: [AAPL] Signals: {'rsi': 53.49, 'macd_line': -2.1085, 'macd_signal': -1.5554, 'macd_histogram': -0.5531, 'latest_price': 316.83}
+2026-09-02 17:45:58,150 [INFO] src.data.firecrawl_research: [AAPL] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:45:58,204 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:45:58,768 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:45:58,770 [ERROR] src.agents.debate: [AAPL] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:58,770 [ERROR] orchestrator: [AAPL] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:45:58,772 [INFO] orchestrator: --- Processing MSFT ---
+2026-09-02 17:45:59,076 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'MSFT': [{'c': 416.03, 'h': 419.77, 'l': 413.02, 'n': 713778, 'o': 416.43, 't': '2026-05-26T04:00:00Z', 'v': 30543249, 'vw': 415.841917}, {'c': 412.67, 'h': 415.94, 'l': 409.58, 'n': 626852, 'o': 411
+2026-09-02 17:45:59,076 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:45:59,078 [INFO] orchestrator: [MSFT] Signals: {'rsi': 63.37, 'macd_line': 22.3988, 'macd_signal': 23.8005, 'macd_histogram': -1.4017, 'latest_price': 484.31}
+2026-09-02 17:46:00,571 [INFO] src.data.firecrawl_research: [MSFT] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:00,620 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:01,163 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:01,165 [ERROR] src.agents.debate: [MSFT] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:01,165 [ERROR] orchestrator: [MSFT] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:01,166 [INFO] orchestrator: --- Processing NVDA ---
+2026-09-02 17:46:01,428 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'NVDA': [{'c': 214.86, 'h': 218.18, 'l': 212, 'n': 2826923, 'o': 216.54, 't': '2026-05-26T04:00:00Z', 'v': 188045403, 'vw': 214.732022}, {'c': 212.6, 'h': 214.15, 'l': 208.78, 'n': 2705892, 'o': 214.
+2026-09-02 17:46:01,430 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:01,432 [INFO] orchestrator: [NVDA] Signals: {'rsi': 54.06, 'macd_line': 4.5402, 'macd_signal': 3.8576, 'macd_histogram': 0.6826, 'latest_price': 217.56}
+2026-09-02 17:46:02,756 [INFO] src.data.firecrawl_research: [NVDA] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:02,812 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:03,375 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:03,377 [ERROR] src.agents.debate: [NVDA] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:03,379 [ERROR] orchestrator: [NVDA] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:03,379 [INFO] orchestrator: --- Processing AMZN ---
+2026-09-02 17:46:03,690 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'AMZN': [{'c': 265.29, 'h': 269.3, 'l': 262.07, 'n': 605012, 'o': 267.94, 't': '2026-05-26T04:00:00Z', 'v': 38106107, 'vw': 264.838719}, {'c': 271.85, 'h': 272.41, 'l': 265.7001, 'n': 651449, 'o': 26
+2026-09-02 17:46:03,690 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:03,693 [INFO] orchestrator: [AMZN] Signals: {'rsi': 55.31, 'macd_line': 4.6191, 'macd_signal': 5.4128, 'macd_histogram': -0.7937, 'latest_price': 265.84}
+2026-09-02 17:46:05,145 [INFO] src.data.firecrawl_research: [AMZN] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:05,212 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:05,445 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:05,448 [ERROR] src.agents.debate: [AMZN] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:05,448 [ERROR] orchestrator: [AMZN] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:05,448 [INFO] orchestrator: --- Processing GOOGL ---
+2026-09-02 17:46:05,729 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'GOOGL': [{'c': 388.88, 'h': 389.2599, 'l': 382.6, 'n': 765901, 'o': 384.51, 't': '2026-05-26T04:00:00Z', 'v': 27942271, 'vw': 387.133537}, {'c': 388.83, 'h': 393.88, 'l': 385.9, 'n': 688471, 'o': 38
+2026-09-02 17:46:05,729 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:05,736 [INFO] orchestrator: [GOOGL] Signals: {'rsi': 46.08, 'macd_line': -2.1468, 'macd_signal': -1.6938, 'macd_histogram': -0.453, 'latest_price': 344.72}
+2026-09-02 17:46:06,835 [INFO] src.data.firecrawl_research: [GOOGL] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:06,879 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:07,162 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:07,163 [ERROR] src.agents.debate: [GOOGL] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:07,163 [ERROR] orchestrator: [GOOGL] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:07,163 [INFO] orchestrator: --- Processing META ---
+2026-09-02 17:46:07,432 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'META': [{'c': 612.34, 'h': 614.47, 'l': 605.3001, 'n': 327159, 'o': 608.89, 't': '2026-05-26T04:00:00Z', 'v': 12294889, 'vw': 609.770505}, {'c': 635.255, 'h': 638.4999, 'l': 609, 'n': 547030, 'o': 6
+2026-09-02 17:46:07,432 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:07,434 [INFO] orchestrator: [META] Signals: {'rsi': 37.05, 'macd_line': -12.1998, 'macd_signal': -8.1357, 'macd_histogram': -4.0641, 'latest_price': 546.03}
+2026-09-02 17:46:08,700 [INFO] src.data.firecrawl_research: [META] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:08,750 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:09,006 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:09,007 [ERROR] src.agents.debate: [META] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:09,008 [ERROR] orchestrator: [META] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:09,009 [INFO] orchestrator: --- Processing TSLA ---
+2026-09-02 17:46:09,321 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'TSLA': [{'c': 433.59, 'h': 435.2, 'l': 426.12, 'n': 1217088, 'o': 430.26, 't': '2026-05-26T04:00:00Z', 'v': 46044080, 'vw': 431.366543}, {'c': 440.36, 'h': 445.6, 'l': 435.52, 'n': 1189173, 'o': 442
+2026-09-02 17:46:09,324 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:09,326 [INFO] orchestrator: [TSLA] Signals: {'rsi': 53.03, 'macd_line': -7.2252, 'macd_signal': -12.8779, 'macd_histogram': 5.6527, 'latest_price': 351.12}
+2026-09-02 17:46:10,749 [INFO] src.data.firecrawl_research: [TSLA] Firecrawl research: 3 snippet(s) retrieved.
+2026-09-02 17:46:10,805 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:11,460 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:11,464 [ERROR] src.agents.debate: [TSLA] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:11,464 [ERROR] orchestrator: [TSLA] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:11,465 [INFO] orchestrator: --- Processing AMD ---
+2026-09-02 17:46:11,778 [WARNING] src.data.mcp_client: bars after data.get: type=<class 'dict'>, value={'AMD': [{'c': 503.89, 'h': 506.96, 'l': 480.23, 'n': 746622, 'o': 484.74, 't': '2026-05-26T04:00:00Z', 'v': 38544920, 'vw': 496.00159}, {'c': 495.54, 'h': 510.21, 'l': 486.6603, 'n': 604364, 'o': 508
+2026-09-02 17:46:11,778 [WARNING] src.data.mcp_client: bars after symbol unwrap: type=<class 'list'>, len=60
+2026-09-02 17:46:11,782 [INFO] orchestrator: [AMD] Signals: {'rsi': 43.84, 'macd_line': -7.0908, 'macd_signal': -7.6143, 'macd_histogram': 0.5235, 'latest_price': 466.42}
+2026-09-02 17:46:12,613 [WARNING] src.data.firecrawl_research: [AMD] Firecrawl API error (429): {"success":false,"error":"Rate limit exceeded. Consumed (req/min): 11, Remaining (req/min): 0. Upgrade your plan at https://firecrawl.dev/pricing for increased rate limits or please retry after 38s, r
+2026-09-02 17:46:12,670 [INFO] google_genai.models: AFC is enabled with max remote calls: 10.
+2026-09-02 17:46:12,898 [INFO] httpx: HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent "HTTP/1.1 404 Not Found"
+2026-09-02 17:46:12,900 [ERROR] src.agents.debate: [AMD] Gemini API error (attempt 1): 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:12,900 [ERROR] orchestrator: [AMD] Analyst agent failed: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+Traceback (most recent call last):
+  File "E:\Alpaca-Hackathon\src\orchestrator.py", line 175, in run_cycle
+    analyst = run_analyst(symbol, signals, research_summary)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 94, in run_analyst
+    response = _call_with_retry(client, symbol, prompt, AnalystOutput)
+  File "E:\Alpaca-Hackathon\src\agents\debate.py", line 53, in _call_with_retry
+    response = client.models.generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1750, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1537, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Users\itsls\AppData\Roaming\uv\python\cpython-3.10-windows-x86_64-none\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\_api_client.py", line 1514, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "E:\Alpaca-Hackathon\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.0-flash is no longer available. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.', 'status': 'NOT_FOUND'}}
+2026-09-02 17:46:12,902 [INFO] orchestrator: --- Processing NFLX ---

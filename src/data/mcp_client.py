@@ -159,11 +159,28 @@ class AlpacaMCPClient:
         Returns a list of closing prices (floats), oldest first.
         Returns empty list on failure (caller must handle the short-list case).
         """
+        # Try multiple parameter conventions: 'symbols' (list/string) vs 'symbol'
         tool_name = self._find_tool("bar", fallback="get_bars")
-        result = await self.call_tool(
-            tool_name, {"symbol": symbol, "timeframe": timeframe, "limit": limit}
-        )
-        raw = getattr(result, "content", result)
+        from datetime import datetime, timedelta
+        start_str = (datetime.utcnow() - timedelta(days=100)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        raw = None
+        for args in (
+            {"symbols": symbol, "timeframe": timeframe, "limit": limit, "start": start_str},
+            {"symbol": symbol, "timeframe": timeframe, "limit": limit, "start": start_str},
+            {"symbols": symbol, "timeframe": timeframe, "limit": limit},
+        ):
+            try:
+                result = await self.call_tool(tool_name, args)
+                raw = getattr(result, "content", result)
+                break
+            except Exception as e:
+                logger.debug(f"get_historical_bars call with args {args} failed: {e}")
+                continue
+        
+        if raw is None:
+            logger.warning(f"All get_historical_bars attempts failed for {symbol}.")
+            return []
 
         def extract_closes(data: Any) -> List[float]:
             closes: List[float] = []
@@ -176,8 +193,8 @@ class AlpacaMCPClient:
                             extracted = extract_closes(parsed)
                             if extracted:
                                 return extracted
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            logger.error(f"extract_closes list parsing error: {e}")
                     elif isinstance(item, dict):
                         c = item.get("c") or item.get("close") or item.get("Close")
                         if c is not None:
@@ -186,6 +203,10 @@ class AlpacaMCPClient:
                             except (TypeError, ValueError):
                                 pass
             elif isinstance(data, dict):
+                # Unwrap FastMCP 'data' envelope if present
+                if "data" in data and isinstance(data["data"], dict):
+                    data = data["data"]
+                
                 # May be {"bars": [...]} or {"AAPL": [...]} or {"bars": {"AAPL": [...]}}
                 bars = (
                     data.get("bars")
@@ -193,9 +214,11 @@ class AlpacaMCPClient:
                     or data.get(symbol.lower())
                     or []
                 )
+                logger.warning(f"bars after data.get: type={type(bars)}, value={str(bars)[:200]}")
                 # bars can itself be a dict like {"AAPL": [...]}
                 if isinstance(bars, dict):
                     bars = bars.get(symbol) or bars.get(symbol.lower()) or []
+                logger.warning(f"bars after symbol unwrap: type={type(bars)}, len={len(bars) if isinstance(bars, list) else 0}")
                 if isinstance(bars, list):
                     for bar in bars:
                         if isinstance(bar, dict):
@@ -210,6 +233,7 @@ class AlpacaMCPClient:
         closes = extract_closes(raw)
         if not closes:
             logger.warning(f"No bar close prices extracted for {symbol}. Raw type: {type(raw)}")
+            logger.warning(f"RAW DATA: {raw}")
         return closes
 
     async def get_option_chain_or_snapshots(
