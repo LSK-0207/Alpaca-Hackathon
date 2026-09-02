@@ -255,6 +255,9 @@ async def run_cycle() -> None:
                 logger.info(
                     f"[{symbol}] Option chain: {len(raw_chain)} contracts retrieved."
                 )
+                if raw_chain:
+                    logger.info(f"[{symbol}] Sample contract fields: {list(raw_chain[0].keys())}")
+                    logger.info(f"[{symbol}] Sample contract: bid={raw_chain[0].get('bid')}, ask={raw_chain[0].get('ask')}, delta={raw_chain[0].get('delta')}, oi={raw_chain[0].get('open_interest')}, expiry={raw_chain[0].get('expiry')}, type={raw_chain[0].get('option_type')}")
             except Exception as e:
                 logger.error(
                     f"[{symbol}] Failed to fetch option chain: {e}", exc_info=True
