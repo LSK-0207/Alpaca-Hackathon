@@ -42,7 +42,7 @@ def evaluate_risk(
         return RiskVerdict(verdict="reject", reason="cooldown_after_losses")
 
     size_pct = min(0.05 * (final_conviction / 100.0), 0.08)
-    if size_pct < 0.01:
+    if size_pct < 0.0025:
         return RiskVerdict(verdict="reject", reason="conviction_too_low", position_size_pct=size_pct)
 
     return RiskVerdict(verdict="approve", reason="within_limits", position_size_pct=size_pct)
