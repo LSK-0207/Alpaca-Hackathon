@@ -249,15 +249,23 @@ class AlpacaMCPClient:
         if not tool_name:
             tool_name = self._find_tool("option", "quote", fallback="get_option_snapshots")
 
-        # Try both parameter naming conventions
+        # The Alpaca options/snapshots endpoint requires 'symbols' (plural, comma-separated).
+        # Try all known parameter naming conventions in order.
         raw = None
-        for param_key in ("underlying_symbol", "symbol", "ticker"):
+        for args in (
+            {"symbols": underlying},
+            {"underlying_symbol": underlying},
+            {"symbol": underlying},
+            {"ticker": underlying},
+        ):
             try:
-                result = await self.call_tool(tool_name, {param_key: underlying})
+                result = await self.call_tool(tool_name, args)
                 raw = getattr(result, "content", result)
-                break
+                # Check if it's actually a 400/error response wrapped in content
+                if raw is not None:
+                    break
             except Exception as e:
-                logger.debug(f"Option chain call with param '{param_key}' failed: {e}")
+                logger.debug(f"Option chain call with args {args} failed: {e}")
                 continue
 
         if raw is None:
