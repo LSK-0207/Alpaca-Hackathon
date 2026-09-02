@@ -243,34 +243,52 @@ class AlpacaMCPClient:
         Retrieves option snapshots / quotes for an underlying symbol.
         Tries multiple parameter key names for compatibility with different MCP server versions.
         """
-        # Build ordered list of (tool_name, args) combinations to try.
-        # Prefer get_option_chain (takes underlying_symbol) over get_option_snapshot (takes symbols).
-        attempts = []
+        # Strategy: use get_option_contracts (contract database, works outside market hours)
+        # then get_option_chain. NEVER use get_option_snapshot with a ticker —
+        # that tool requires a full OCC symbol (e.g. CRM260117C00220000), not a ticker.
+        contracts_tool = self._find_tool("option", "contracts", fallback="get_option_contracts")
         chain_tool = self._find_tool("option", "chain", fallback="")
-        snapshot_tool = self._find_tool("option", "snapshot", fallback="")
-        quote_tool = self._find_tool("option", "latest_quote", fallback="")
 
-        for tool in filter(None, [chain_tool, snapshot_tool, quote_tool]):
+        # Only include chain_tool if it's different from contracts_tool
+        tools_to_try = [t for t in [contracts_tool, chain_tool] if t]
+
+        attempts = []
+        for tool in tools_to_try:
             attempts += [
                 (tool, {"underlying_symbol": underlying}),
-                (tool, {"symbols": underlying}),
+                (tool, {"underlying": underlying}),
                 (tool, {"symbol": underlying}),
-                (tool, {"ticker": underlying}),
             ]
 
         if not attempts:
-            attempts = [("get_option_chain", {"underlying_symbol": underlying})]
+            attempts = [("get_option_contracts", {"underlying_symbol": underlying})]
 
         raw = None
         for tool_name, args in attempts:
             try:
                 result = await self.call_tool(tool_name, args)
-                raw = getattr(result, "content", result)
-                if raw is not None:
-                    logger.info(f"Option chain fetched via {tool_name} with args {list(args.keys())}")
-                    break
+                content = getattr(result, "content", result)
+                if content is None:
+                    continue
+                # Check for error response embedded in the JSON text
+                first_text = ""
+                if isinstance(content, list) and content:
+                    first_text = getattr(content[0], "text", "")
+                if first_text:
+                    try:
+                        parsed = json.loads(first_text)
+                        # Skip if it's an error wrapper
+                        inner = parsed.get("data", parsed)
+                        if isinstance(inner, dict) and "error" in inner:
+                            logger.debug(f"Option chain {tool_name} returned error: {inner['error']}")
+                            continue
+                    except Exception:
+                        pass
+                raw = content
+                logger.info(f"Option chain fetched via {tool_name} with args {list(args.keys())}")
+                break
             except Exception as e:
-                logger.debug(f"Option chain attempt {tool_name}({args}) failed: {e}")
+                logger.debug(f"Option chain attempt {tool_name}({list(args.keys())}) failed: {e}")
                 continue
 
         if raw is None:
