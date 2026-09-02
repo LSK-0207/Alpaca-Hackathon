@@ -107,8 +107,11 @@ async def run_cycle() -> None:
     try:
         await mcp.connect()
 
-        # 1. Market clock check
-        is_open = await mcp.market_is_open()
+        # 1. Market clock check (can be bypassed for testing via BYPASS_MARKET_HOURS=true)
+        bypass = os.getenv("BYPASS_MARKET_HOURS", "false").lower() == "true"
+        is_open = bypass or await mcp.market_is_open()
+        if bypass:
+            logger.info("BYPASS_MARKET_HOURS=true — skipping market clock check.")
         if not is_open:
             logger.info("Market is closed. Trading cycle terminating early.")
             return
