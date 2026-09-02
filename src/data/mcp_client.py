@@ -243,29 +243,34 @@ class AlpacaMCPClient:
         Retrieves option snapshots / quotes for an underlying symbol.
         Tries multiple parameter key names for compatibility with different MCP server versions.
         """
-        tool_name = self._find_tool("option", "snapshot", fallback="")
-        if not tool_name:
-            tool_name = self._find_tool("option", "chain", fallback="")
-        if not tool_name:
-            tool_name = self._find_tool("option", "quote", fallback="get_option_snapshots")
+        # Build ordered list of (tool_name, args) combinations to try.
+        # Prefer get_option_chain (takes underlying_symbol) over get_option_snapshot (takes symbols).
+        attempts = []
+        chain_tool = self._find_tool("option", "chain", fallback="")
+        snapshot_tool = self._find_tool("option", "snapshot", fallback="")
+        quote_tool = self._find_tool("option", "latest_quote", fallback="")
 
-        # The Alpaca options/snapshots endpoint requires 'symbols' (plural, comma-separated).
-        # Try all known parameter naming conventions in order.
+        for tool in filter(None, [chain_tool, snapshot_tool, quote_tool]):
+            attempts += [
+                (tool, {"underlying_symbol": underlying}),
+                (tool, {"symbols": underlying}),
+                (tool, {"symbol": underlying}),
+                (tool, {"ticker": underlying}),
+            ]
+
+        if not attempts:
+            attempts = [("get_option_chain", {"underlying_symbol": underlying})]
+
         raw = None
-        for args in (
-            {"symbols": underlying},
-            {"underlying_symbol": underlying},
-            {"symbol": underlying},
-            {"ticker": underlying},
-        ):
+        for tool_name, args in attempts:
             try:
                 result = await self.call_tool(tool_name, args)
                 raw = getattr(result, "content", result)
-                # Check if it's actually a 400/error response wrapped in content
                 if raw is not None:
+                    logger.info(f"Option chain fetched via {tool_name} with args {list(args.keys())}")
                     break
             except Exception as e:
-                logger.debug(f"Option chain call with args {args} failed: {e}")
+                logger.debug(f"Option chain attempt {tool_name}({args}) failed: {e}")
                 continue
 
         if raw is None:
