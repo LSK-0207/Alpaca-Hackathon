@@ -6,7 +6,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: '*/30 13-20 * * 1-5'   # every 30 min, ~US market hours UTC, weekdays
+    - cron: '*/30 13-20 * * 1-5'   # every 30 min, ~US market hours UTC, weekdays — adjust for DST
   workflow_dispatch: {}
 
 jobs:
@@ -14,14 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
+      # astral-sh/setup-uv installs both `uv` (fast installer) AND `uvx` (tool runner)
+      # uvx is required at runtime to launch the alpaca-mcp-server subprocess
       - uses: astral-sh/setup-uv@v3
         with:
           enable-cache: true
+
+      # Install Python dependencies using uv (faster than pip)
       - run: uv pip install --system -r requirements.txt
-      - run: python -m src.orchestrator
+
+      # Pre-warm the alpaca-mcp-server tool in uvx cache so first cycle doesn't time out
+      - name: Pre-warm alpaca-mcp-server via uvx
+        run: uvx alpaca-mcp-server --help || true
+
+      - name: Run trading cycle
+        run: python -m src.orchestrator
         env:
           ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
           ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}

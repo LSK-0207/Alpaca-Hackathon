@@ -15,7 +15,7 @@ import yaml
 from dotenv import load_dotenv
 
 from src.agents.debate import run_analyst, run_critic
-from src.data.firecrawl_research import research
+from src.data.firecrawl_research import research_async
 from src.data.mcp_client import AlpacaMCPClient, get_mcp_client
 from src.db.client import DatabaseClient, get_db_client
 from src.execution.executor import execute_order
@@ -100,7 +100,8 @@ async def run_cycle() -> None:
     cycle_started_at = datetime.now(timezone.utc).isoformat()
     logger.info(f"=== Trading cycle starting at {cycle_started_at} ===")
 
-    mcp: AlpacaMCPClient = get_mcp_client()
+    # Create a fresh MCP client per cycle — never reuse a previously-disconnected singleton
+    mcp: AlpacaMCPClient = AlpacaMCPClient()
     db: DatabaseClient = get_db_client()
 
     try:
@@ -120,7 +121,12 @@ async def run_cycle() -> None:
             logger.error(f"Failed to fetch account info from MCP: {e}", exc_info=True)
             account_data = {}
 
-        open_positions_list = db.get_open_positions() if db.is_connected() else []
+        open_positions_list: List[Dict[str, Any]] = []
+        if db.is_connected():
+            try:
+                open_positions_list = db.get_open_positions()
+            except Exception as e:
+                logger.error(f"Failed to fetch open positions from DB: {e}")
         account = _parse_account_state(account_data, open_positions_list)
         logger.info(
             f"AccountState: daily_pnl_pct={account.daily_pnl_pct:.4f}, "
@@ -157,9 +163,9 @@ async def run_cycle() -> None:
                 )
                 continue
 
-            # B. Web research via Firecrawl
+            # B. Web research via Firecrawl (async — does not block event loop)
             try:
-                research_summary = research(symbol)
+                research_summary = await research_async(symbol)
             except Exception as e:
                 logger.warning(f"[{symbol}] Firecrawl research failed: {e}. Continuing with empty summary.")
                 research_summary = ""

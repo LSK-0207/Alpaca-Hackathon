@@ -1,6 +1,8 @@
-# Core MCP & Trading
+# Core MCP client library (Python SDK)
 mcp>=1.0.0
-alpaca-mcp-server>=0.1.0
+# NOTE: alpaca-mcp-server is NOT a pip package.
+# It is invoked at runtime via `uvx alpaca-mcp-server` (install uvx separately).
+# Ensure `uvx` is available on PATH in your environment / GitHub Actions runner.
 
 # LLM & AI
 google-genai>=0.1.1
