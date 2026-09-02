@@ -96,18 +96,18 @@ async def monitor_open_positions(
         try:
             # Fetch live quote from MCP
             quote = await mcp.get_option_quote(occ_symbol)
+            if quote is None:
+                logger.warning(f"[{occ_symbol}] Could not fetch quote — leaving position open this cycle.")
+                continue
+
             bid = float(quote.get("bid", 0.0))
             ask = float(quote.get("ask", 0.0))
 
             if bid <= 0 and ask <= 0:
-                # If quote fetch failed / returned zero, use mid_price key if present
-                current_mid = float(quote.get("mid_price", entry_cost))
-                logger.warning(
-                    f"[{occ_symbol}] Quote bid/ask are both 0 — using mid_price={current_mid}. "
-                    f"Will still evaluate expiry gate."
-                )
-            else:
-                current_mid = (bid + ask) / 2.0
+                logger.warning(f"[{occ_symbol}] Quote returned zero bid/ask — leaving position open this cycle.")
+                continue
+            
+            current_mid = (bid + ask) / 2.0
 
             reason = should_close_position(entry_cost, current_mid, expiry_date, today)
 
@@ -123,12 +123,8 @@ async def monitor_open_positions(
                     await mcp.place_option_order(occ_symbol, qty, side="sell")
                     logger.info(f"[{occ_symbol}] Sell-to-close order placed for {qty} contract(s).")
                 except Exception as e:
-                    logger.error(
-                        f"[{occ_symbol}] Failed to place sell-to-close order: {e}",
-                        exc_info=True,
-                    )
-                    # Still update DB — we don't want to re-attempt closes that already fired
-                    # In production, reconcile against broker state
+                    logger.error(f"[{occ_symbol}] Sell-to-close failed: {e}. Leaving position open for retry next cycle.")
+                    continue
 
                 exit_value = current_mid
                 realized_pnl = (exit_value - entry_cost) * qty * 100.0

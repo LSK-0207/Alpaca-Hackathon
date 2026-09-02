@@ -70,8 +70,6 @@ with tab_overview:
             st.metric(
                 "Realized P&L",
                 f"${realized_pnl:,.2f}",
-                delta=f"${realized_pnl:,.2f}",
-                delta_color="normal",
             )
         with col3:
             if not closed_df.empty:
@@ -85,26 +83,12 @@ with tab_overview:
         st.markdown("### Open Positions")
         if not open_df.empty:
             # Attempt to enrich with live mid-price from Alpaca (best-effort, no blocking)
-            live_quotes: dict = {}
             if supabase:
-                try:
-                    occ_symbols = open_df["occ_symbol"].dropna().tolist()
-                    st.caption(
-                        f"Fetching live quotes for {len(occ_symbols)} open position(s)…"
-                    )
-                    # Note: live quote fetch via Alpaca requires direct API call.
-                    # The MCP server is a CLI process — not available from Streamlit context.
-                    # We display a prompt for the user to configure a direct Alpaca data API key
-                    # if they want live quotes here, or simply show the stored entry costs.
-                    # This is consistent with the spec — the dashboard reads from Supabase and
-                    # "live quote pulled on page load" is best-effort here.
-                    st.info(
-                        "💡 Live option quotes require direct Alpaca Data API access. "
-                        "Showing stored entry costs below. For live unrealized P&L, "
-                        "set ALPACA_API_KEY and ALPACA_SECRET_KEY in your Streamlit secrets."
-                    )
-                except Exception:
-                    pass
+                st.info(
+                    "💡 Live option quotes require direct Alpaca Data API access. "
+                    "Showing stored entry costs below. For live unrealized P&L, "
+                    "set ALPACA_API_KEY and ALPACA_SECRET_KEY in your Streamlit secrets."
+                )
 
             display_cols = [
                 c for c in

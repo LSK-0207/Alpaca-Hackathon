@@ -38,3 +38,47 @@ def test_position_monitor_exits():
         expiry_date=date(2026, 9, 20),
         current_date=today,
     ) is None
+
+
+import pytest
+from unittest.mock import AsyncMock, MagicMock
+from src.execution.position_monitor import monitor_open_positions
+
+@pytest.mark.asyncio
+async def test_monitor_open_positions_handles_failures():
+    db_mock = MagicMock()
+    db_mock.is_connected.return_value = True
+    # One open position
+    db_mock.get_open_positions.return_value = [
+        {
+            "position_id": "pos-1",
+            "occ_symbol": "AAPL260920C00150000",
+            "entry_cost": 2.00,
+            "qty": 1,
+        }
+    ]
+
+    mcp_mock = AsyncMock()
+
+    # Scenario 1: Quote is None (failed quote)
+    mcp_mock.get_option_quote.return_value = None
+    
+    closed = await monitor_open_positions(
+        mcp_client=mcp_mock, db_client=db_mock, current_date=date(2026, 9, 10)
+    )
+    
+    assert len(closed) == 0
+    db_mock.close_position.assert_not_called()
+
+    # Scenario 2: Quote succeeds and triggers stop-loss, but sell order fails
+    # entry_cost = 2.00, mid = 1.00 (-50%) -> Stop loss
+    mcp_mock.get_option_quote.return_value = {"bid": 1.00, "ask": 1.00, "mid_price": 1.00}
+    mcp_mock.place_option_order.side_effect = Exception("Network error")
+    
+    closed = await monitor_open_positions(
+        mcp_client=mcp_mock, db_client=db_mock, current_date=date(2026, 9, 10)
+    )
+    
+    assert len(closed) == 0
+    mcp_mock.place_option_order.assert_called_once()
+    db_mock.close_position.assert_not_called()

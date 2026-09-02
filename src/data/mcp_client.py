@@ -121,8 +121,8 @@ class AlpacaMCPClient:
                 return bool(clock.get("is_open", False))
             return False
         except Exception as e:
-            logger.warning(f"Could not determine market open status: {e}. Assuming open.")
-            return True
+            logger.warning(f"Could not determine market open status: {e}. Assuming CLOSED (fail-safe).")
+            return False
 
     async def get_account(self) -> Dict[str, Any]:
         """Returns the Alpaca account information as raw MCP content."""
@@ -306,13 +306,12 @@ class AlpacaMCPClient:
 
         return extract_chain(raw)
 
-    async def get_option_quote(self, occ_symbol: str) -> Dict[str, Any]:
+    async def get_option_quote(self, occ_symbol: str) -> Optional[Dict[str, Any]]:
         """
         Gets the latest quote (bid/ask/mid) for a specific option contract.
         Returns dict with: bid, ask, mid_price, delta.
-        Returns zeroed dict on any failure — callers must handle the zero case.
+        Returns None on any failure.
         """
-        _zero = {"bid": 0.0, "ask": 0.0, "mid_price": 0.0, "delta": 0.0}
         try:
             tool_name = self._find_tool("option", "snapshot", fallback="")
             if not tool_name:
@@ -329,7 +328,7 @@ class AlpacaMCPClient:
                     continue
 
             if raw is None:
-                return _zero
+                return None
 
             def parse_quote(data: Any) -> Dict[str, Any]:
                 if isinstance(data, list):
@@ -356,12 +355,12 @@ class AlpacaMCPClient:
                             "mid_price": mid,
                             "delta": float(greeks.get("delta", 0.0) or 0.0),
                         }
-                return _zero
+                return None
 
             return parse_quote(raw)
         except Exception as e:
             logger.error(f"Failed to fetch option quote for {occ_symbol}: {e}")
-            return _zero
+            return None
 
     async def get_order_status(self, order_id: str) -> Dict[str, Any]:
         """Polls the status of a placed order by order_id."""
