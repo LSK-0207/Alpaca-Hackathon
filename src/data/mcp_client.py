@@ -240,126 +240,176 @@ class AlpacaMCPClient:
         self, underlying: str
     ) -> List[Dict[str, Any]]:
         """
-        Retrieves option snapshots / quotes for an underlying symbol.
-        Tries multiple parameter key names for compatibility with different MCP server versions.
+        Fetches option contracts for an underlying symbol.
+
+        Tool priority:
+          1. get_option_chain  — returns live snapshot data with greeks (market hours only)
+          2. get_option_contracts — returns contract metadata only (works outside hours)
+
+        NOTE: get_option_snapshot requires a full OCC symbol, not a ticker — never use it here.
         """
-        # Strategy: use get_option_contracts (contract database, works outside market hours)
-        # then get_option_chain. NEVER use get_option_snapshot with a ticker —
-        # that tool requires a full OCC symbol (e.g. CRM260117C00220000), not a ticker.
-        contracts_tool = self._find_tool("option", "contracts", fallback="get_option_contracts")
+        import re
+        from datetime import datetime as _dt
+
         chain_tool = self._find_tool("option", "chain", fallback="")
+        contracts_tool = self._find_tool("option", "contracts", fallback="get_option_contracts")
 
-        # Only include chain_tool if it's different from contracts_tool
-        tools_to_try = [t for t in [contracts_tool, chain_tool] if t]
-
+        # Build attempts in priority order; skip duplicate tool names
+        seen: set = set()
         attempts = []
-        for tool in tools_to_try:
-            attempts += [
-                (tool, {"underlying_symbol": underlying}),
-                (tool, {"underlying": underlying}),
-                (tool, {"symbol": underlying}),
-            ]
+        for tool in [chain_tool, contracts_tool]:
+            if tool and tool not in seen:
+                seen.add(tool)
+                attempts += [
+                    (tool, {"underlying_symbol": underlying}),
+                    (tool, {"underlying": underlying}),
+                    (tool, {"symbol": underlying}),
+                ]
 
-        if not attempts:
-            attempts = [("get_option_contracts", {"underlying_symbol": underlying})]
-
-        raw = None
+        raw_content = None
         for tool_name, args in attempts:
             try:
                 result = await self.call_tool(tool_name, args)
                 content = getattr(result, "content", result)
-                if content is None:
-                    continue
-                # Check for error response embedded in the JSON text
-                first_text = ""
-                if isinstance(content, list) and content:
-                    first_text = getattr(content[0], "text", "")
-                if first_text:
-                    try:
-                        parsed = json.loads(first_text)
-                        # Skip if it's an error wrapper
-                        inner = parsed.get("data", parsed)
-                        if isinstance(inner, dict) and "error" in inner:
-                            logger.debug(f"Option chain {tool_name} returned error: {inner['error']}")
-                            continue
-                    except Exception:
-                        pass
-                raw = content
-                logger.info(f"Option chain fetched via {tool_name} with args {list(args.keys())}")
-                break
+                if content is not None:
+                    raw_content = content
+                    logger.debug(f"[{underlying}] Option data via {tool_name}({list(args.keys())})")
+                    break
             except Exception as e:
-                logger.debug(f"Option chain attempt {tool_name}({list(args.keys())}) failed: {e}")
+                logger.debug(f"[{underlying}] Option chain {tool_name}({list(args.keys())}): {e}")
                 continue
 
-        if raw is None:
-            logger.warning(f"All option chain call attempts failed for {underlying}.")
+        if raw_content is None:
+            logger.warning(f"[{underlying}] All option chain attempts failed.")
             return []
 
+        def _parse_occ(occ: str, val: dict) -> dict:
+            """Enrich a contract dict with fields parsed from its OCC symbol."""
+            if not occ or len(occ) < 15:
+                return val
+            val = dict(val)
+            val["occ_symbol"] = occ
+            if "expiry" not in val or not val["expiry"]:
+                m = re.match(r"^[A-Z]+(\d{6})[CP]", occ)
+                if m:
+                    try:
+                        val["expiry"] = _dt.strptime(m.group(1), "%y%m%d").date().isoformat()
+                    except Exception:
+                        pass
+            if "option_type" not in val or not val["option_type"]:
+                m = re.match(r"^[A-Z]+\d{6}([CP])", occ)
+                if m:
+                    val["option_type"] = "call" if m.group(1) == "C" else "put"
+            if "strike" not in val or not val["strike"]:
+                m = re.match(r"^[A-Z]+\d{6}[CP](\d{8})$", occ)
+                if m:
+                    val["strike"] = int(m.group(1)) / 1000.0
+            return val
+
+        def _flatten_snapshot(val: dict, occ: str) -> dict:
+            """Flatten a snapshot dict (greeks + latestQuote) into a flat contract dict."""
+            val = _parse_occ(occ, val)
+            greeks = val.pop("greeks", {}) or {}
+            val["delta"] = float(greeks.get("delta", val.get("delta", 0.0)) or 0.0)
+            val["gamma"] = float(greeks.get("gamma", val.get("gamma", 0.0)) or 0.0)
+            quote = val.pop("latestQuote", None) or val.pop("latest_quote", None) or {}
+            if quote:
+                val["bid"] = float(quote.get("bp", quote.get("bid", 0.0)) or 0.0)
+                val["ask"] = float(quote.get("ap", quote.get("ask", 0.0)) or 0.0)
+            return val
+
+        def _parse_contracts_list(items: list) -> List[Dict[str, Any]]:
+            """Parse get_option_contracts response: list of contract metadata dicts."""
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                occ = (
+                    item.get("symbol") or
+                    item.get("occ_symbol") or
+                    item.get("id") or ""
+                )
+                contract = _parse_occ(occ, item)
+                # Map Alpaca field names to our standard names
+                if "option_type" not in contract or not contract["option_type"]:
+                    contract["option_type"] = item.get("type", "")
+                if "expiry" not in contract or not contract["expiry"]:
+                    contract["expiry"] = item.get("expiration_date", "")
+                if "strike" not in contract or not contract["strike"]:
+                    try:
+                        contract["strike"] = float(item.get("strike_price", 0) or 0)
+                    except (TypeError, ValueError):
+                        pass
+                # open_interest from contract metadata
+                if "open_interest" not in contract:
+                    try:
+                        contract["open_interest"] = int(item.get("open_interest", 0) or 0)
+                    except (TypeError, ValueError):
+                        contract["open_interest"] = 0
+                results.append(contract)
+            return results
+
         def extract_chain(data: Any) -> List[Dict[str, Any]]:
-            contracts: List[Dict[str, Any]] = []
+            """Recursively parse MCP content into a flat list of contract dicts."""
             if isinstance(data, list):
+                # MCP TextContent list — recurse into each item's text payload
                 for item in data:
                     text = getattr(item, "text", None)
                     if text:
                         try:
-                            parsed = json.loads(text)
-                            extracted = extract_chain(parsed)
-                            if extracted:
-                                return extracted
+                            return extract_chain(json.loads(text))
                         except Exception:
                             pass
                     elif isinstance(item, dict):
-                        contracts.append(item)
-            elif isinstance(data, dict):
-                # {occ_symbol: snapshot_dict, ...} format
-                for key, val in data.items():
-                    if isinstance(val, dict):
-                        val = dict(val)  # copy to avoid mutating original
-                        val["occ_symbol"] = key
-                        # Flatten greeks
-                        greeks = val.get("greeks", {}) or {}
-                        val["delta"] = float(greeks.get("delta", 0.0) or 0.0)
-                        val["gamma"] = float(greeks.get("gamma", 0.0) or 0.0)
-                        val["theta"] = float(greeks.get("theta", 0.0) or 0.0)
-                        val["vega"] = float(greeks.get("vega", 0.0) or 0.0)
-                        # Flatten latest quote
-                        quote = val.get("latestQuote") or val.get("latest_quote") or {}
-                        if quote:
-                            val["bid"] = float(quote.get("bp", quote.get("bid", 0.0)) or 0.0)
-                            val["ask"] = float(quote.get("ap", quote.get("ask", 0.0)) or 0.0)
-                        # Parse expiry from OCC symbol if not present
-                        if "expiry" not in val and len(key) >= 15:
-                            # OCC format: {ticker}{YYMMDD}{C|P}{strike}
-                            try:
-                                import re
-                                from datetime import datetime
-                                m = re.match(r"^[A-Z]+(\d{6})[CP]", key)
-                                if m:
-                                    val["expiry"] = datetime.strptime(m.group(1), "%y%m%d").date().isoformat()
-                            except Exception:
-                                pass
-                        # Parse option_type if not present
-                        if "option_type" not in val and len(key) >= 15:
-                            try:
-                                import re
-                                m = re.match(r"^[A-Z]+\d{6}([CP])", key)
-                                if m:
-                                    val["option_type"] = "call" if m.group(1) == "C" else "put"
-                            except Exception:
-                                pass
-                        # Parse strike if not present
-                        if "strike" not in val and len(key) >= 15:
-                            try:
-                                import re
-                                m = re.match(r"^[A-Z]+\d{6}[CP](\d{8})$", key)
-                                if m:
-                                    val["strike"] = int(m.group(1)) / 1000.0
-                            except Exception:
-                                pass
-                        contracts.append(val)
-            return contracts
+                        # Bare dict list — try as contracts list
+                        parsed = _parse_contracts_list(data)
+                        if parsed:
+                            return parsed
+                        break
+                return []
 
-        return extract_chain(raw)
+            elif isinstance(data, dict):
+                # Format 1: get_option_chain snapshot — {OCC_SYMBOL: {greeks, latestQuote, ...}}
+                # Detect by checking if any key looks like an OCC symbol
+                snapshot_contracts = []
+                for key, val in data.items():
+                    if isinstance(val, dict) and re.match(r"^[A-Z]{1,6}\d{6}[CP]\d{8}$", key):
+                        snapshot_contracts.append(_flatten_snapshot(val, key))
+                if snapshot_contracts:
+                    return snapshot_contracts
+
+                # Format 2: get_option_contracts response — {option_contracts: [...]}
+                items = (
+                    data.get("option_contracts") or
+                    data.get("contracts") or
+                    data.get("results") or
+                    []
+                )
+                if isinstance(items, list) and items:
+                    return _parse_contracts_list(items)
+
+                # Format 3: wrapped data envelope
+                inner = data.get("data") or data.get("body")
+                if inner:
+                    return extract_chain(inner)
+
+            return []
+
+        contracts = extract_chain(raw_content)
+        if not contracts:
+            logger.info(
+                f"[{underlying}] Option chain: 0 contracts parsed "
+                f"(market may be closed — live pricing required for order execution)."
+            )
+        else:
+            has_pricing = any(c.get("bid") and c.get("ask") for c in contracts)
+            logger.info(
+                f"[{underlying}] Option chain: {len(contracts)} contract(s) parsed"
+                + (" with live pricing" if has_pricing else " (metadata only — no bid/ask outside market hours)")
+            )
+        return contracts
+
+
 
     async def get_option_quote(self, occ_symbol: str) -> Optional[Dict[str, Any]]:
         """
